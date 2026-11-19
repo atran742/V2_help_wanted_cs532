@@ -1,0 +1,74 @@
+# SignMeUp
+
+An application which will help students and staff nagivate course registration, student records, class information, faculty information, and student grades
+
+## Developed by the 'Help Wanted Team'
+
+```
+Project Manager: Isha Shekhar
+
+Configuration Manager: Elijah Uy
+
+Software Manager: Amy Tran
+
+Database Manager: Natalie Petersen
+
+Test Manager: Justin Ogden
+
+Software Developer: Anirudh Jha
+```
+
+## File Structure
+
+```
+SignMeUp/
+├── index.html
+├── src/
+│   ├── app.js
+│   ├── data.js
+│   ├── index.css
+│   └── utils.js
+├── backend/
+│   ├── server.js
+│   └── config/db.js
+└── database/
+    └── cs532_databasescript.sql
+```
+
+## Systems Architecture
+
+![alt text](docs/Systems_architecture/Sw_arch_532.png)
+
+## Updated prototype quick start
+
+The current prototype can be demonstrated without a database. Open two PowerShell terminals from the project root.
+
+```powershell
+cd .\frontend\signmeup
+npm install
+npm run dev
+```
+
+Open the Vite URL, normally `http://localhost:5173`, and use one of the demo accounts shown on the login screen. Prototype changes are saved in browser localStorage. Use **Reset demo data** on the Overview screen to return to the seed data.
+
+The PostgreSQL API is optional for the browser prototype. To run it after setting a connection string:
+
+```powershell
+cd .\backend
+npm install
+$env:DATABASE_URL = "your_postgresql_connection_string"
+npm start
+```
+
+The API exposes `/health`, `/health/database`, `/api/authorizedusers/login`, and `/api/authorizedusers`. GET data endpoints (all return PostgreSQL rows as JSON arrays) are:
+
+- Students: `/api/students` (`/students` remains as an alias), `/api/student-notes`, `/api/transcripts`, `/api/transfer-courses`
+- Registration: `/api/departments`, `/api/courses`, `/api/prerequisites`, `/api/classes`, `/api/enrollments`
+- Majors: `/api/majors`, `/api/major-courses`, `/api/major-advisors`, `/api/approved-outlines`, `/api/outline-entries`, `/api/outline-history`
+- Faculty: `/api/faculty`, `/api/faculty-teaching-departments`, `/api/qualified-faculty`
+- Grades: `/api/grades`, `/api/course-comments`
+- System: `/api/audit`, `/api/subsystems`, `/api/subsystem-access`
+
+The database script in `database/cs532_databasescript.sql` creates the subsystem schemas and tables for a new PostgreSQL database.
+
+See `docs/requirements/Implementation status.md` for the requirement-to-feature mapping and the remaining deployment boundaries.
