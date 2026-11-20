@@ -1545,7 +1545,143 @@ td small {
   .report-preview {
     background: #fff;
   }
+.report-preview-overlay {
+    position: static !important;
+    display: block !important;
+    visibility: visible !important;
+    background: white !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  .report-preview-window {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .report-toolbar,
+  .report-options,
+  .report-preview-actions {
+    display: none !important;
+  }
+
+  .report-document,
+  .course-table-block,
+  .table-wrap {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: white !important;
+  }
+
+  .report-document table {
+    display: table !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  .report-document th,
+  .report-document td {
+    color: black !important;
+    border: 1px solid #ccc !important;
+    padding: 8px !important;
+  }
+
+  .report-document tr {
+    page-break-inside: avoid;
+  }
 }
+
+
+.workspace-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  min-height: calc(100vh - 70px);
+}
+
+.content-area {
+  min-width: 0;
+  padding: 24px;
+}
+
+.context-help-panel {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-left: 1px solid var(--border);
+  min-width: 0;
+}
+
+.context-help-search {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.context-help-search input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.context-help-content {
+  flex: 1;
+  padding: 20px;
+}
+
+.context-help-content h2 {
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+.context-help-content h3 {
+  font-size: 15px;
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+
+.help-required {
+  display: inline-block;
+  background: #e5e7eb;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+.context-help-link {
+  margin-top: 24px;
+  color: #2874a6;
+  text-decoration: underline;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.context-help-footer {
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 900px) {
+  .workspace-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .context-help-panel {
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+}
+
 /* Report preview overlay */
 .report-preview-overlay {
   position: fixed;

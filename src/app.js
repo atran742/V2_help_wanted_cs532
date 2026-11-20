@@ -53,6 +53,7 @@
     reportStudent: "",
     reportDepartment: "CS",
     reportCourse: "",
+    showHelp: false,
     userForm: { name: "", username: "", password: "", role: "student" },
     resetUser: "",
     resetPassword: "",
@@ -99,9 +100,42 @@
     return `<span class="status status-${tone}">${escapeHtml(text)}</span>`;
   }
 
-  function field(label, value, name, type = "text", required = false) {
-    return `<label class="form-field"><span>${label}${required ? " <em>Required</em>" : ""}</span><input name="${name}" type="${type}" value="${escapeHtml(value)}" ${required ? "required" : ""}></label>`;
-  }
+  
+function field(
+  label,
+  value,
+  name,
+  type = "text",
+  required = false,
+  help = {}
+) {
+  const helpTitle = help.title || label;
+  const helpRequired = help.required || (required ? "Required" : "Optional");
+  const helpRequirements = help.requirements || (
+    required ? "This field must be completed." : "This field is optional."
+  );
+  const helpDescription = help.description || `Enter the ${label.toLowerCase()}.`;
+
+  return `
+    <label class="form-field">
+      <span>
+        ${label}${required ? " <em>Required</em>" : ""}
+      </span>
+
+      <input
+        name="${name}"
+        type="${type}"
+        value="${escapeHtml(value)}"
+        ${required ? "required" : ""}
+        data-help-title="${escapeHtml(helpTitle)}"
+        data-help-required="${escapeHtml(helpRequired)}"
+        data-help-requirements="${escapeHtml(helpRequirements)}"
+        data-help-description="${escapeHtml(helpDescription)}"
+      >
+    </label>
+  `;
+}
+
 
   function info(label, value) {
     return `<div class="info-item"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
@@ -203,8 +237,21 @@
       <div class="sidebar-bottom"><div class="secure-note"><span>●</span><div><strong>Local demo workspace</strong><small>Changes stay in this browser</small></div></div><button type="button" class="signout" data-action="signout">Sign out</button></div></aside>
       <main class="main-shell"><header class="topbar"><div><p class="breadcrumb">SignMeUp / ${title}</p><h1>${title}</h1></div><div class="topbar-actions">
       ${session.role === "admin" ? `<label class="view-as">View as <select data-change="preview-role">${["admin", "student", "faculty", "advisor"].map((item) => `<option value="${item}" ${role === item ? "selected" : ""}>${ROLE_LABELS[item]}</option>`).join("")}</select></label>` : ""}
-      <button type="button" class="help-button" data-action="navigate" data-page="help" aria-label="Open help">?</button><div class="profile-chip"><span class="avatar">${escapeHtml(user.name?.slice(0, 1))}</span><div><strong>${escapeHtml(user.name)}</strong><small>${escapeHtml(ROLE_LABELS[role])}</small></div></div></div></header>
-      <div class="content-area">${renderPage()}</div></main>${toast ? `<div class="toast toast-${toast.tone}" role="status"><span>${toast.tone === "error" ? "!" : "✓"}</span>${escapeHtml(toast.message)}<button type="button" data-action="dismiss-toast">×</button></div>` : ""}</div>`;
+      <button
+  type="button"
+  class="help-button"
+  data-action="toggle-help"
+  aria-label="Toggle help panel"
+>
+  ?
+</button><div class="profile-chip"><span class="avatar">${escapeHtml(user.name?.slice(0, 1))}</span><div><strong>${escapeHtml(user.name)}</strong><small>${escapeHtml(ROLE_LABELS[role])}</small></div></div></div></header>
+      <div class="workspace-layout">
+  <main class="content-area">
+    ${renderPage()}
+  </main>
+
+  ${ui.showHelp ? renderContextHelp() : ""}
+</div></main>${toast ? `<div class="toast toast-${toast.tone}" role="status"><span>${toast.tone === "error" ? "!" : "✓"}</span>${escapeHtml(toast.message)}<button type="button" data-action="dismiss-toast">×</button></div>` : ""}</div>`;
   }
 
   function renderPage() {
@@ -278,7 +325,35 @@
     const editable = role === "admin" || role === "advisor";
     const draft = ui.recordDraft;
     const details = ui.editingRecord
-      ? `<form data-form="record" class="form-grid">${field("Student name", draft.name ?? student.name, "name", "text", true)}${field("Telephone", draft.telephone ?? student.telephone, "telephone")}${field("Address", draft.address ?? student.address, "address")}${field("Date of birth", draft.dateOfBirth ?? student.dateOfBirth, "dateOfBirth", "date", true)}${field("Major", draft.major ?? student.major, "major", "text", true)}${field("Minor", draft.minor ?? student.minor, "minor")}<label class="check-label full-span"><input name="graduateAccepted" type="checkbox" ${draft.graduateAccepted ?? student.graduateAccepted ? "checked" : ""}> Accepted into graduate program</label><div class="full-span"><button class="button button-primary">Save record</button></div></form>`
+      ? `<form data-form="record" class="form-grid">
+      ${field(
+  "Student name",
+  draft.name ?? student.name,
+  "name",
+  "text",
+  true,
+  {
+    required: "Required",
+    requirements: "Enter the student's full name.",
+    description: "The student's name used for identification and academic records."
+  }
+)}
+      ${field("Telephone", draft.telephone ?? student.telephone, "telephone")}${field("Address", draft.address ?? student.address, "address")}
+      ${field(
+  "Date of Birth",
+  draft.dateOfBirth ?? student.dateOfBirth,
+  "dateOfBirth",
+  "date",
+  true,
+  {
+    required: "Required",
+    requirements: "A valid date must be entered.",
+    description: "The student's date of birth, used for identification and student records."
+  }
+)}
+  data-help-requirements="A valid date must be entered."
+  data-help-description="The student's date of birth, used for identification and student records."
+>${field("Major", draft.major ?? student.major, "major", "text", true)}${field("Minor", draft.minor ?? student.minor, "minor")}<label class="check-label full-span"><input name="graduateAccepted" type="checkbox" ${draft.graduateAccepted ?? student.graduateAccepted ? "checked" : ""}> Accepted into graduate program</label><div class="full-span"><button class="button button-primary">Save record</button></div></form>`
       : `<div class="record-summary">${info("Student ID", student.id)}${info("Telephone", student.telephone || "Not provided")}${info("Address", student.address || "Not provided")}${info("Date of birth", student.dateOfBirth || "Not provided")}${info("Major", student.major || "Not provided")}${info("Minor", student.minor || "Not provided")}${info("GPA", calculateGpa(student))}${info("Graduate status", student.graduateAccepted ? "Accepted" : "Not accepted")}</div>`;
     const noteList = student.notes?.length
       ? [...student.notes].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)).map((item) => `<div class="note-item"><p>${escapeHtml(item.text)}</p><span class="muted small">Posted by Employee ${escapeHtml(item.employeeId)} · ${dateTime(item.createdAt)}</span></div>`).join("")
@@ -400,6 +475,102 @@
     ];
     return `<div class="page-stack"><div class="intro-row"><div><p class="eyebrow">Context-sensitive help</p><h2>How can we help?</h2><p class="muted">This help center covers system functions, screens, and data fields.</p></div>${status(`Current screen: ${NAV_ITEMS.find((item) => item.id === page)?.label || "Help"}`, "info")}</div><div class="help-grid">${topics.map(([title, text]) => `<article class="help-card"><span class="help-card-icon">?</span><h3>${title}</h3><p>${text}</p></article>`).join("")}</div>${panel("Field reference", "<div class=\"table-wrap\"><table><thead><tr><th>Field</th><th>Required</th><th>Meaning</th></tr></thead><tbody><tr><td>Campus email / ID</td><td>Yes</td><td>Assigned identifier for a demo account.</td></tr><tr><td>Course ID</td><td>Yes</td><td>Unique course identifier used by registration and reports.</td></tr><tr><td>Registration type</td><td>Yes</td><td>Determines valid grade values.</td></tr><tr><td>Status date</td><td>Yes</td><td>Date an outline action was entered.</td></tr></tbody></table></div>")}</div>`;
   }
+
+
+
+function renderContextHelp() {
+  const screenHelp = {
+    dashboard: {
+      title: "Dashboard",
+      description: "View your dashboard and access the features available to your assigned role."
+    },
+    registration: {
+      title: "Course Registration",
+      description: "Search course offerings, review eligibility, and register for available courses."
+    },
+    records: {
+      title: "Electronic Student Records",
+      description: "View student information, academic history, enrollment, GPA, and protected notes."
+    },
+    majors: {
+      title: "Major Requirements",
+      description: "Review major and minor requirements and their associated courses."
+    },
+    faculty: {
+      title: "Faculty Information",
+      description: "View and manage faculty and course information."
+    },
+    grades: {
+      title: "Course Grades",
+      description: "View and manage course grades according to your assigned permissions."
+    },
+    reports: {
+      title: "Reports",
+      description: "Generate, review, and print available system reports."
+    },
+    users: {
+      title: "User Management",
+      description: "Manage user accounts, roles, and access permissions."
+    },
+    help: {
+      title: "Help Center",
+      description: "Find documentation and instructions for using SignMeUp."
+    }
+  };
+
+  const currentHelp = screenHelp[page] || screenHelp.dashboard;
+
+  return `
+    <aside class="context-help-panel">
+      <div class="context-help-search">
+        <input
+          type="search"
+          placeholder="Search help..."
+          aria-label="Search help"
+        >
+      </div>
+      <div class="context-help-content">
+
+        <h2 id="context-help-title">
+          ${currentHelp.title}
+        </h2>
+
+        <span id="context-help-required" class="help-required">
+          Select a field
+        </span>
+
+        <h3>Field Requirements</h3>
+        <p id="context-help-requirements">
+          Click or tab into a field to view its requirements.
+        </p>
+
+        <h3>Description</h3>
+        <p id="context-help-description">
+          ${currentHelp.description}
+        </p>
+
+        <button
+          type="button"
+          class="context-help-link"
+          data-action="navigate"
+          data-page="help"
+        >
+          View Screen Help
+        </button>
+
+      </div>
+
+      <div class="context-help-footer">
+        ${activeRole() === "admin"
+          ? button("Edit Documentation", "edit-help", "primary")
+          : ""}
+      </div>
+
+    </aside>
+  `;
+}
+
+
 
   function registerCourse(courseId) {
     const studentId = activeRole() === "student" ? activeStudentId() : (ui.regStudent || activeStudentId());
@@ -601,11 +772,33 @@
     render();
   });
 
+
+
+root.addEventListener("focusin", (event) => {
+  const field = event.target.closest("[data-help-title]");
+
+  if (!field) return;
+
+  const title = root.querySelector("#context-help-title");
+  const required = root.querySelector("#context-help-required");
+  const requirements = root.querySelector("#context-help-requirements");
+  const description = root.querySelector("#context-help-description");
+
+  if (title) title.textContent = field.dataset.helpTitle;
+  if (required) required.textContent = field.dataset.helpRequired;
+  if (requirements) requirements.textContent = field.dataset.helpRequirements;
+  if (description) description.textContent = field.dataset.helpDescription;
+});
+
+
   root.addEventListener("click", (event) => {
     const target = event.target.closest("[data-action]");
     if (!target) return;
     const action = target.dataset.action;
     if (action === "navigate") { page = target.dataset.page; }
+    else if (action === "toggle-help") {
+      ui.showHelp = !ui.showHelp;
+    }
     else if (action === "signout") { session = null; ui.error = ""; }
     else if (action === "dismiss-toast") toast = null;
     else if (action === "toggle-password") ui.showPassword = !ui.showPassword;
