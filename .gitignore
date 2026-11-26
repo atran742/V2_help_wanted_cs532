@@ -8,6 +8,7 @@ Thumbs.db
 
 # enviorments
 *.pem
+.env
 
 # Dependencies
 node_modules/

@@ -365,6 +365,18 @@ const NAV_ITEMS = [
     roles: ["faculty", "admin"],
   },
   {
+    id: "course-management",
+    label: "Course Management",
+    icon: "＋",
+    roles: ["admin"],
+  },
+  {
+    id: "academic-setup",
+    label: "Academic Setup",
+    icon: "⚙",
+    roles: ["admin"],
+  },
+  {
     id: "reports",
     label: "Reports",
     icon: "▥",
@@ -435,16 +447,30 @@ function checkEligibility(
   );
   if (enrolledIds.has(course.id))
     reasons.push("The student is already registered for this course.");
-  if (course.seats <= 0) reasons.push("There are no seats available.");
+  if (!course.classId) {
+    reasons.push("There is no scheduled class offering for this course.");
+  } else if (course.seats <= 0) {
+    reasons.push("There are no seats available.");
+  }
   const missing = course.prerequisites.filter(
     (prerequisite) => !completedIds.has(prerequisite),
   );
   if (missing.length)
     reasons.push(`Missing prerequisite(s): ${missing.join(", ")}.`);
-  if (
-    course.level === "upper" &&
-    ![student.major, student.minor].includes(course.department)
-  ) {
+  const declaredMajorMatchesDepartment = [student.major, student.minor].some(
+    (declaredMajor) => {
+      const value = String(declaredMajor || "").trim().toLowerCase();
+      const catalogMajor = (state.majors || []).find((major) =>
+        [major.id, major.title, major.department].some(
+          (candidate) => String(candidate || "").trim().toLowerCase() === value,
+        ),
+      );
+      const department = catalogMajor?.department || declaredMajor;
+      return String(department || "").trim().toLowerCase() ===
+        String(course.department || "").trim().toLowerCase();
+    },
+  );
+  if (course.level === "upper" && !declaredMajorMatchesDepartment) {
     reasons.push(
       "Upper-division courses are limited to the declared major or minor.",
     );
@@ -476,8 +502,8 @@ function checkEligibility(
   return { eligible: reasons.length === 0, reasons };
 }
 
-function getDemoUser(state, username, password) {
-  return state.users.find(
+function getDemoUser(username, password) {
+  return DEMO_USERS.find(
     (user) =>
       user.username.toLowerCase() === username.trim().toLowerCase() &&
       user.password === password,
