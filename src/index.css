@@ -1792,16 +1792,19 @@ td small {
     margin: 0.6in;
   }
 
-  body * {
+  /* When a report pop-up is open, print only that report.
+     Without an open pop-up, the print block above prints the
+     current screen with the navigation and buttons hidden. */
+  body:has(.report-preview-overlay .report-document) * {
     visibility: hidden !important;
   }
 
-  .report-document,
-  .report-document * {
+  body:has(.report-preview-overlay .report-document) .report-document,
+  body:has(.report-preview-overlay .report-document) .report-document * {
     visibility: visible !important;
   }
 
-  .report-document {
+  body:has(.report-preview-overlay .report-document) .report-document {
     position: absolute;
     top: 0;
     left: 0;
@@ -1817,77 +1820,25 @@ td small {
     break-inside: avoid;
   }
 
-  .report-document table {
+  .report-document table,
+  .print-report table {
     width: 100%;
     border-collapse: collapse;
   }
 
   .report-document th,
-  .report-document td {
+  .report-document td,
+  .print-report th,
+  .print-report td {
     border: 1px solid #aaa;
     padding: 8px;
     text-align: left;
+    color: black;
   }
 
-  .report-document th {
+  .report-document th,
+  .print-report th {
     background: #eee !important;
-    color: black;
     print-color-adjust: exact;
-  }
-}
-
-@media print {
-  /* Hide the entire application by default */
-  body * {
-    visibility: hidden;
-  }
-
-  /* Show only the generated report */
-  .reg-report-preview,
-  .reg-report-preview * {
-    visibility: visible;
-  }
-
-  .reg-report-preview {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 20px;
-    color: black;
-    background: white;
-  }
-
-  .reg-report-preview table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .reg-report-preview th,
-  .reg-report-preview td {
-    border: 1px solid #999;
-    padding: 8px;
-    text-align: left;
-    color: black;
-  }
-
-  .reg-report-preview th {
-    background: #eee !important;
-  }
-
-  .reg-report-preview .report-heading {
-    margin-bottom: 24px;
-  }
-
-  .reg-report-preview h2 {
-    font-size: 22px;
-  }
-
-  .reg-report-preview tr {
-    break-inside: avoid;
-  }
-
-  @page {
-    margin: 0.6in;
   }
 }
